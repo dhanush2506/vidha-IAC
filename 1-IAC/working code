@@ -1,0 +1,30 @@
+resource "google_compute_instance" "tf-vm-instances" {
+    for_each = var.instances
+    name = each.key
+    zone = each.value.zone
+    machine_type = each.value.instance_type
+    tags = [each.key]
+    
+    boot_disk {
+
+    initialize_params {
+      image = data.google_compute_image.ubuntu_image.self_link
+      size  = 10
+      type  = "pd-balanced"
+    }
+  }
+    network_interface {
+        access_config {
+        network_tier = "PREMIUM"
+        }
+        network = google_compute_network.tf-vpc.name
+        subnetwork  = google_compute_subnetwork.tf-subnet.name
+    }
+
+    }
+
+    #data block to get image
+    data "google_compute_image" "ubuntu_image" {
+    family = "ubuntu-2004-lts"
+    project = "ubuntu-os-cloud"
+    }
